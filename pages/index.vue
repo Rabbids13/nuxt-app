@@ -17,6 +17,8 @@
               </b-dropdown-item>
             </b-dropdown>
           </div>
+          <input type="text" class="form-control" placeholder="Search"
+                 v-model="searchQuery">
           <button
             class="btn btn-outline-secondary py-1 px-3"
             @click="isShow = !isShow">
@@ -33,26 +35,31 @@
       </div>
 
       <div class="list-task row">
-        <CardItem :task="tasks[0]" :isGrid="isGrid" />
-        <CardItem :task="tasks[1]" :isGrid="isGrid" />
-        <CardItem :task="tasks[2]" :isGrid="isGrid" />
+        <CardItem
+          v-for="(task, i) in resultQuery"
+          :key="i"
+          :task="task"
+          :isGrid="isGrid"
+          :isShow="isShow"
+        />
       </div>
 
       <div class="action py-2">
         <a href="#" class="add-button" v-if="!isCreating" @click="isCreating =!isCreating">Add Task</a>
         <div class="add-card" v-else>
-          <div class="card mb-2">
-            <div class="card-body d-flex flex-column p-0">
-              <form>
-                <input class="form-control border-0 mb-2" placeholder="Title" type="text">
-                <textarea class="form-control border-0 small" placeholder="Description" rows="3"></textarea>
-              </form>
+          <form v-on:submit.prevent="submitForm">
+            <div class="card mb-2">
+              <div class="card-body d-flex flex-column p-0">
+                <input v-model="form.title" class="form-control border-0 mb-2" placeholder="Title" type="text">
+                <textarea v-model="form.description" class="form-control border-0 small" placeholder="Description" rows="3"></textarea>
+              </div>
             </div>
-          </div>
-          <div class="button-wrapper d-flex">
-            <button class="btn btn-primary me-2">Save</button>
-            <button class="btn btn-outline-secondary" @click="isCreating =!isCreating">Cancel</button>
-          </div>
+            <div class="button-wrapper d-flex">
+              <button class="btn btn-primary me-2" type="submit">Save</button>
+              <button class="btn btn-outline-secondary" @click="isCreating =!isCreating">Cancel</button>
+            </div>
+          </form>
+
         </div>
       </div>
     </div>
@@ -64,20 +71,18 @@
 </template>
 <script>
 import CardItem from "~/components/Card/CardItem";
-import LoadingPage from "@/components/LoadingPage";
 export default {
   components: {
     CardItem,
-    LoadingPage
+
   },
   data() {
     return {
 // Daftar task
       form : {
-        name: '',
-        message:'',
-        priority:'',
-        agreement:'',
+        title:'',
+        description: '',
+        isDone: false,
       },
       priorityOptions:[
         {option: "Tidak ada prioritas", value: ""},
@@ -122,10 +127,12 @@ export default {
           category: 'b'
         },
       ],
+      searchQuery: '',
       isCreating: false,
       isGrid: false,
-      isShow: true,
+      isShow: false,
       show: true,
+
     }
 
   },
@@ -147,31 +154,42 @@ export default {
   // updated() {
   //
   // },
-  // computed: {
-  //   resultQuery() {
-  //     if (this.cat != "")
-  //       return this.tasks.filter((i) => i.category == this.cat)
-  //     if (this.searchQuery) {
-  //       return this.tasks.filter((item) => {
-  //         return this.searchQuery
-  //           .toLowerCase()
-  //           .split(" ")
-  //           .every((v) => item.title.toLowerCase().includes(v));
-  //       });
-  //     } else {
-  //       console.log(this.tasks);
-  //       return this.tasks
-  //     }
-  //   },
-  //
-  //   resultCategory() {
-  //     let a = this.tasks
-  //       .map((item) => item.category)
-  //       .filter((value, index, self) => self.indexOf(value) === index);
-  //     console.log(a);
-  //     return a;
-  //   },
-  // },
+  computed: {
+    resultQuery() {
+      // if (this.cat != "")
+      //   return this.tasks.filter((item) => item.category == this.cat)
+      if (this.searchQuery) {
+        return this.tasks.filter((item) => {
+          return this.searchQuery
+            .toLowerCase()
+            .split(" ")
+            .every((v) => item.title.toLowerCase().includes(v));
+        });
+      // if (this.searchQuery) {
+      //   return this.$store.state.tasks.tasks.filter((item) => {
+      //     return this.searchQuery
+      //       .toLowerCase()
+      //       .split(" ")
+      //       .every((v) => item.title.toLowerCase().includes(v));
+      //   });
+      } else {
+        console.log(this.tasks);
+        return this.tasks
+      }
+      // } else {
+      //   console.log(this.$store.state.tasks.tasks);
+      //   return this.$store.state.tasks.tasks
+      // }
+    },
+
+    resultCategory() {
+      let a = this.tasks
+        .map((item) => item.category)
+        .filter((value, index, self) => self.indexOf(value) === index);
+      console.log(a);
+      return a;
+    },
+  },
   methods: {
     showToggle(){
       setTimeout(() => {
@@ -183,12 +201,17 @@ export default {
 
     },
     submitForm() {
-      console.log(this.form);
+      console.log(this.form)
+      // this.$store.commit("tasks/ADD_TASK", this.form)
+      this.$store.dispatch("tasks/addTask", this.form)
+
+      this.form = {
+        title: '',
+        description: '',
+        isDone: false
+      }
     }
-    // mounted(){
-    //   this.isLoading
-    //   setTimeout
-    // }
+
   },
 }
 </script>
