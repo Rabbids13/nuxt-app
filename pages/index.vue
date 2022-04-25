@@ -132,7 +132,7 @@ export default {
       isGrid: false,
       isShow: false,
       show: true,
-
+      cat: '',
     }
 
   },
@@ -156,8 +156,8 @@ export default {
   // },
   computed: {
     resultQuery() {
-      // if (this.cat != "")
-      //   return this.tasks.filter((item) => item.category == this.cat)
+      if (this.cat != "")
+        return this.tasks.filter((item) => item.category == this.cat)
       if (this.searchQuery) {
         return this.tasks.filter((item) => {
           return this.searchQuery
